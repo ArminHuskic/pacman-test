@@ -1,5 +1,6 @@
 package com.pacman;
 
-public interface Pill {
-    public void eatPill();
+interface Pill {
+    void eatPill();
+    void render(CellVisitor cellVisitor, int x, int y);
 }

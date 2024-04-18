@@ -1,5 +1,7 @@
 package com.pacman;
 
+import javafx.scene.image.Image;
+
 public class Tile implements Cell {
     private Pill pill;
 
@@ -12,8 +14,13 @@ public class Tile implements Cell {
         return true;
     }
 
+/*     @Override
+    public Image getImage() {
+        return new Image(getClass().getResourceAsStream("/tile.png"));
+    } */
+
     @Override
-    public void accept(CellVisitor visitor, int x, int y) {
+    public void render(CellVisitor visitor, int x, int y) {
         visitor.renderCell(this, x, y);
     }
 
@@ -26,7 +33,6 @@ public class Tile implements Cell {
         this.pill = null;
     }
 
-    // Getter is necessary for GameView to draw pills
     public Pill getPill() {
         return this.pill;
     }

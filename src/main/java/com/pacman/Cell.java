@@ -2,5 +2,5 @@ package com.pacman;
 
 public interface Cell {
     boolean isPassable();
-    void accept(CellVisitor visitor, int x, int y);
+    void render(CellVisitor visitor, int x, int y);
 }

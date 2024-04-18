@@ -16,7 +16,7 @@ public class GameController {
 
         stage.setTitle("Pacman");
 
-        Scene scene = new Scene(this.gameView);
+        Scene scene = new Scene(this.gameView.getRoot());
         stage.setScene(scene);
 
         // TODO: Refactor?

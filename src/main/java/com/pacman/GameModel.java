@@ -3,13 +3,16 @@ package com.pacman;
 import java.util.ArrayList;
 
 public class GameModel {
-/*     private GameState gameState; */
+    private static final int SMALL_PILL_POINTS = 1;
+    private static final int BIG_PILL_POINTS = 10;
+
+    private GameState gameState = new NormalGameState();
     private int score = 0;
-    private int lives = 3;
+    private int lives = 2;
     // Maybe separate into another class
     private final Cell[][] maze;
-    private final Character pacman = new Character(0, 0, Direction.RIGHT);
-/*     private final ArrayList<Ghost> ghosts; */
+    private final Pacman pacman;
+    private final ArrayList<Ghost> ghosts;
 
     private int width, height, blockSize;
 
@@ -21,11 +24,13 @@ public class GameModel {
         int columns = width/blockSize;
         int rows = height/blockSize;
         this.maze = new Cell[columns][rows];
+        this.pacman = new Pacman(this.blockSize/2, this.blockSize/2, Direction.RIGHT, this.maze, blockSize);
+        this.ghosts = new ArrayList<Ghost>();
 
         // Temporary test map
         for (int x = 0; x < columns; x++) {
             for (int y = 0; y < rows; y++) {
-                this.maze[x][y] = new Tile(null);
+                this.maze[x][y] = new Tile(new SmallPill());
             }
         }
 
@@ -38,55 +43,69 @@ public class GameModel {
                 this.maze[x][1] = new Wall();
             }
         }
+
+        this.maze[3][5] = new Tile(new BigPill());
+    }
+
+    public void changeState(GameState state) {
+        this.gameState = state;
     }
 
     public void update(double dt) {
-        checkStuck(this.pacman);
+        this.gameState.update(dt);
+
         this.pacman.update(dt);
-/*         this.ghosts.forEach((ghost) -> ghost.update(dt)); */
+        for (Ghost ghost : this.ghosts) {
+            ghost.update(dt);
+
+            if (this.pacman.collides(ghost)) {
+                this.gameState.onPacmanGhostCollision(ghost);
+            }
+        }
+    }
+
+    public void onSmallPillEaten() {
+        this.score += SMALL_PILL_POINTS;
+    }
+
+    public void onBigPillEaten() {
+        this.score += BIG_PILL_POINTS;
+
+        PowerGameState newState = new PowerGameState();
+        newState.setGameModel(this);
+        this.changeState(newState);
     }
 
     public void changePacmanDirection(Direction direction) {
-        // TODO: Refactor
-        boolean legal = false;
-        int x = this.pacman.getCellX(this.blockSize);
-        int y = this.pacman.getCellY(this.blockSize);
-        int blocks = this.maze.length - 1;
+        this.pacman.changeDirection(direction);
+    }
 
-        switch (direction) {
-            case UP:
-                if (this.maze[x][Math.max(0, y - 1)].isPassable()) {
-                    legal = true;
-                }
-                break;
-            case LEFT:
-                if (this.maze[Math.max(0, x - 1)][y].isPassable()) {
-                    legal = true;
-                }
-                break;
-            case RIGHT:
-                if (this.maze[Math.min(blocks, x + 1)][y].isPassable()) {
-                    legal = true;
-                }
-                break;
-            case DOWN:
-                if (this.maze[x][Math.min(blocks, y + 1)].isPassable()) {
-                    legal = true;
-                }
-                break;
-        }
+    public void addScore(int addend) {
+        this.score += addend;
+    }
 
-        if (legal) {
-            this.pacman.setDirection(direction);
-        }
+    public int getLives() {
+        return this.lives;
+    }
+
+    public void decrementLives() {
+        this.lives--;
     }
 
     public Cell[][] getMaze() {
         return this.maze;
     }
 
-    public Character getPacman() {
+    public Pacman getPacman() {
         return this.pacman;
+    }
+
+    public ArrayList<Ghost> getGhosts() {
+        return this.ghosts;
+    }
+
+    public void removeGhost(Ghost ghost) {
+        this.ghosts.remove(ghost);
     }
 
     public int getWidth() {
@@ -99,42 +118,5 @@ public class GameModel {
 
     public int getBlockSize() {
         return this.blockSize;
-    }
-
-    private void checkStuck(Character character) {
-        // TODO: Bad code, refactor later
-        boolean stuck = false;
-        int i = character.getCellX(this.blockSize);
-        int j = character.getCellY(this.blockSize);
-        int blocks = this.maze.length - 1;
-
-        switch (character.getDirection()) {
-            case UP:
-                if (!this.maze[i][Math.max(0, j - 1)].isPassable()) {
-                    stuck = true;
-                }
-                break;
-            case LEFT:
-                if (!this.maze[Math.max(0, i - 1)][j].isPassable()) {
-                    stuck = true;
-                }
-                break;
-            case RIGHT:
-                if (!this.maze[Math.min(blocks, i + 1)][j].isPassable()) {
-                    stuck = true;
-                }
-                break;
-            case DOWN:
-                if (!this.maze[i][Math.min(blocks, j + 1)].isPassable()) {
-                    stuck = true;
-                }
-                break;
-        }
-
-        if (stuck) {
-            character.setStuck();
-        } else {
-            character.unStuck();
-        }
     }
 }
