@@ -16,6 +16,6 @@ public class Ghost extends Character {
 
     @Override
     public Image getImage() {
-        return new Image(getClass().getResourceAsStream("/ghost.png"));
+        return this.ghostState.getImage();
     }
 }

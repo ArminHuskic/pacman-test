@@ -1,6 +1,6 @@
 package com.pacman;
 
-interface GhostState {
+interface GhostState extends Renderable {
     void setGhost(Ghost ghost);
     void setSearchStrategy(SearchStrategy SearchStrategy);
     void target();
